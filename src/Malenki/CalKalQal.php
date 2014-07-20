@@ -37,20 +37,71 @@ class CalKalQal
     public $month;
     public $year;
     public $arr_links = array();
+
+    protected $arr_day_names = array();
+    protected $arr_month_names = array();
     
     // first day of the month into week
     private $firstday;
     // last day of the month into week
     private $lastday;
 
+    protected $output = 'json';
+
+    protected function generateLocalDays()
+    {
+        for($i = 1; $i < 6; $i++){
+            $time = strtotime(sprintf('1970-01-%02d', $i));
+
+            $item = new \stdClass();
+            $item->long = strftime('%A', $time);
+            $item->short = strftime('%a', $time);
+
+            $this->arr_day_names[] = $item;
+        }
+    }
+
+    protected function generateLocalMonthes()
+    {
+        for($i = 1; $i < 13; $i++){
+            $time = strtotime(sprintf('1970-%02d-05', $i));
+
+            $item = new \stdClass();
+            $item->long = strftime('%B', $time);
+            $item->short = strftime('%b', $time);
+
+            $this->arr_month_names[] = $item;
+        }
+    }
+
+    protected function firstAndLastDaysInTheMonth()
+    {
+        // start month
+        $time = mktime(0, 0 , 0, $this->month, 1, $this->year);
+        $this->days = (int) date('t', $time);
+        $this->firstday = (int) date('w', $time);
+        
+        if($this->firstday == 0)
+        {
+            $this->firstday = 7;
+        }
+
+        // last day
+        $time = mktime(0, 0 , 0, $this->month, $this->days, $this->year);
+        $this->lastday = (int) date('w', $time);
+        if($this->lastday == 0)
+        {
+            $this->lastday = 7;
+        }
+    }
 
     /**
      * Constructor
      * 
      * @param mixed $month 
      * @param mixed $year
-     * @access public
      * @return void
+     * @todo test values!!!!
      */
     public function __construct($month = null, $year = null)
     {
@@ -71,24 +122,11 @@ class CalKalQal
         {
             $this->year = $year;
         }
-        
-        // start month
-        $time = mktime(0, 0 , 0, $this->month, 1, $this->year);
-        $this->days = (int) date('t', $time);
-        $this->firstday = (int) date('w', $time);
-        
-        if($this->firstday == 0)
-        {
-            $this->firstday = 7;
-        }
 
-        // last day
-        $time = mktime(0, 0 , 0, $this->month, $this->days, $this->year);
-        $this->lastday = (int) date('w', $time);
-        if($this->lastday == 0)
-        {
-            $this->lastday = 7;
-        }
+        $this->generateLocalDays();
+        $this->generateLocalMonthes();
+        $this->firstAndLastDaysInTheMonth();
+        
     }
 
     /**
@@ -143,21 +181,7 @@ class CalKalQal
 
     public function getMonthName()
     {
-        $arr_month_names = array(
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December" 
-        );
-        return $arr_month_names[$this->month - 1];
+        return $this->arr_month_names[$this->month - 1];
     }
 
     private function getOutsideDaysBefore()
@@ -209,35 +233,24 @@ class CalKalQal
         return $arr_out;
     }
 
-    /**
-     * render 
-     * 
-     * @todo Must not be like that. Must allow XML or JSON only
-     */
-    public function render()
+    protected function toJson()
     {
-        $dom_table = new DOMDocument();
-        $tag_table = $dom_table->createElement('table');
-        $tag_table->setAttribute('class','calendar');
+        //TODO: implement it!
+    }
 
-        $txt_title = $this->getMonthName().' '.$this->year;
-            
+    protected function toXml()
+    {
+        //TODO: change all its structure
+        $dom_table = new DOMDocument();
+        $tag_table = $dom_table->createElement('calendar');
+
+        $tag_th_title = $dom_table->createElement('th', $this->getMonthName().' '.$this->year);
+
         if(isset($this->url_title))
         {
-            $tag_a_title = $dom_table->createElement('a', $txt_title);
-            $tag_a_title->setAttribute('href', $this->url_title);
-            $tag_th_title = $dom_table->createElement('th');
-            $tag_th_title->appendChild($tag_a_title);
-        }
-        else
-        {
-            $tag_th_title = $dom_table->createElement('th', $txt_title);
+            $tag_th_title->setAttribute('href', $this->url_title);
         }
 
-
-        // TODO here, variable number of cells
-        $tag_th_title->setAttribute('colspan', 7);
-        $tag_th_title->setAttribute('class', 'calendar_title');
 
         $tag_thead           = $dom_table->createElement('thead');
         $tag_thead_row_title = $dom_table->createElement('tr');
@@ -245,26 +258,13 @@ class CalKalQal
 
         $tag_thead_row_title->appendChild($tag_th_title);
 
-        $arr_day_names = array(
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday"
-        );
-        foreach($arr_day_names as $d)
+        foreach($this->arr_day_names as $d)
         {
-            if($this->one_letter_day)
-            {
-                $tag_th_day = $dom_table->createElement('th', mb_substr($d, 0, 1, 'UTF-8'));
-                $tag_th_day->setAttribute('title', $d);
-            }
-            else
-            {
-                $tag_th_day = $dom_table->createElement('th', $d);
-            }
+            $tag_th_day = $dom_table->createElement('day' );
+
+            $tag_th_day->setAttribute('long', $d->long);
+            $tag_th_day->setAttribute('short', $d->short);
+            $tag_th_day->setAttribute('letter', mb_substr($d->long, 0, 1, 'UTF-8'));
 
             $tag_thead_row_days->appendChild($tag_th_day);
         }
@@ -341,6 +341,25 @@ class CalKalQal
         $tag_table->appendChild($tag_tbody);
 
         return $dom_table->saveXML($tag_table);
+    }
+
+    /**
+     * render 
+     * 
+     * @todo Must not be like that. Must allow XML or JSON only
+     */
+    public function render()
+    {
+        if($this->output == 'json'){
+            return $this->toJson();
+        } else {
+            return $this->toXml();
+        }
+    }
+
+    public function __toString()
+    {
+        return $this->render();
     }
 }
 
