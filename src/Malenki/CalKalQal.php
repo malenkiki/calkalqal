@@ -1,7 +1,34 @@
 <?php
+/*
+Copyright (c) 2014 Michel Petit <petit.michel@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+namespace Malenki;
 
 /**
- * @todo enable feature to add link for days outside this month, to have link for blank boxes
+ * CalKalQal to have calendar structure. 
+ * 
+ * @author Michel Petit <petit.michel@gmail.com> 
+ * @license MIT
  */
 class CalKalQal 
 {
@@ -77,11 +104,13 @@ class CalKalQal
     public function addLink($day, $url)
     {
         $this->arr_links[$day] = $url;
+        return $this;
     }
 
     public function addLinkTitle($url)
     {
         $this->url_title = $url;
+        return $this;
     }
 
     private function addCountPrevNextLink($previous, $next)
@@ -95,18 +124,21 @@ class CalKalQal
         {
             $this->prev_next_links++;
         }
+        return $this;
     }
 
     public function addLinkMonth($previous, $next)
     {
         $this->arr_url_month = array('previous' => $previous, 'next' => $next);
         $this->addCountPrevNextLink($previous, $next);
+        return $this;
     }
 
     public function addLinkYear($previous, $next)
     {
         $this->arr_url_year = array('previous' => $previous, 'next' => $next);
         $this->addCountPrevNextLink($previous, $next);
+        return $this;
     }
 
     public function getMonthName()
@@ -177,9 +209,13 @@ class CalKalQal
         return $arr_out;
     }
 
+    /**
+     * render 
+     * 
+     * @todo Must not be like that. Must allow XML or JSON only
+     */
     public function render()
     {
-        // TODO ajouter la possibilité de personnaliser via XSL
         $dom_table = new DOMDocument();
         $tag_table = $dom_table->createElement('table');
         $tag_table->setAttribute('class','calendar');
@@ -306,12 +342,5 @@ class CalKalQal
 
         return $dom_table->saveXML($tag_table);
     }
-
-    public function show()
-    {
-        print($this->render());
-    }
 }
 
-$c = new CalKalQal(4, 2014);
-$c->show();
