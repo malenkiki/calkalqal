@@ -112,18 +112,18 @@ class CalKalQal
     public function getMonthName()
     {
         $arr_month_names = array(
-            __("January",   "cal"),
-            __("February",  "cal"),
-            __("March",     "cal"),
-            __("April",     "cal"),
-            __("May",       "cal"),
-            __("June",      "cal"),
-            __("July",      "cal"),
-            __("August",    "cal"),
-            __("September", "cal"),
-            __("October",   "cal"),
-            __("November",  "cal"),
-            __("December",  "cal")
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December" 
         );
         return $arr_month_names[$this->month - 1];
     }
@@ -210,13 +210,13 @@ class CalKalQal
         $tag_thead_row_title->appendChild($tag_th_title);
 
         $arr_day_names = array(
-            __("Monday",    "cal"),
-            __("Tuesday",   "cal"),
-            __("Wednesday", "cal"),
-            __("Thursday",  "cal"),
-            __("Friday",    "cal"),
-            __("Saturday",  "cal"),
-            __("Sunday",    "cal")
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
         );
         foreach($arr_day_names as $d)
         {
@@ -312,3 +312,6 @@ class CalKalQal
         print($this->render());
     }
 }
+
+$c = new CalKalQal(4, 2014);
+$c->show();
